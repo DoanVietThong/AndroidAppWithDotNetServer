@@ -111,5 +111,27 @@ namespace MyWebApiApp.Services
             chat.MessageType = loai.MessageType;
             _context.SaveChanges();
         }
+
+        List<FullChatModel> IChatInfoRepository.GetChat(int userRoot, int userClient, int page)
+        {
+            var query = (from chat in _context.Chats
+                        join chatInfo in _context.ChatInfos on chat.ChatId equals chatInfo.ChatId
+                        where chat.SenderId == userRoot && chat.ReceiverId == userClient || chat.ReceiverId == userRoot && chat.SenderId == userClient
+                        select new FullChatModel
+                        {
+                            SenderId = chat.SenderId,
+                            ReceiverId = chat.ReceiverId,
+                            ChatId = chat.ChatId,
+                            DateSend = chatInfo.SendDate, 
+                            Message=chatInfo.Message, 
+                            MessageType = chatInfo.MessageType
+                        }).Skip((page-1)*PAGE_SIZE).Take(PAGE_SIZE);
+            var result = new List<FullChatModel>();
+            foreach (var item in query)
+            {
+                result.Add(item);   
+            }
+            return result;
+        }
     }
 }

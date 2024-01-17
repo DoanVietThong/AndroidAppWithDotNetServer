@@ -29,6 +29,44 @@ namespace MyWebApiApp.Controllers
             _appSettings = optionsMonitor.CurrentValue;
         }
 
+        [HttpGet("GetUsers")]
+        public IActionResult GetUsers(int rootUserId) 
+        { 
+            try
+            {
+                var result = (from chat in _context.Chats
+                            join sender in _context.NguoiDungs on chat.SenderId equals sender.Id
+                            join receiver in _context.NguoiDungs on chat.ReceiverId equals receiver.Id
+                            join chatInfo in _context.ChatInfos on chat.ChatId equals chatInfo.ChatId
+                            where chat.SenderId == rootUserId || chat.ReceiverId == rootUserId
+                            orderby chatInfo.SendDate ascending
+                            group new { Sender = sender, Receiver = receiver, SendDate = chatInfo.SendDate } by new { SenderId = sender.Id, ReceiverId = receiver.Id } into grouped
+                            select new
+                            {
+                                 Sender = grouped.First().Sender.UserName,
+                                 SenderId = grouped.Key.SenderId,
+                                 Receiver = grouped.First().Receiver.UserName,
+                                 ReceiverId = grouped.Key.ReceiverId,
+                                 LatestSendDate = grouped.First().SendDate
+                            }).Take(5);
+
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Success to ge user",
+                    Data = result
+                });
+            }
+            catch
+            {
+                return Ok(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Fail to get user"
+                });
+            }
+        }
+
         [HttpPost("Register")]
         public IActionResult Register(string UserName, string Password, string HoTen, string Email)
         {
@@ -128,6 +166,7 @@ namespace MyWebApiApp.Controllers
                 });
             }
         }
+
 
         [HttpPost("Login")]
         public async Task<IActionResult> Validate(LoginModel model)

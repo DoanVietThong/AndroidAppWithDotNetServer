@@ -37,6 +37,29 @@ namespace MyWebApiApp.Controllers
                 });
             }
         }
+
+        //[HttpGet]
+        /*public IActionResult GetChat(int userRoot, int userClient, int page)
+        {
+            try
+            {
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Sucess getting chats",
+                    Data = _chatInfoRepository.GetChat(userRoot, userClient, page)
+                });
+            }
+            catch 
+            {
+                return Ok(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Fail to get chats"
+                });
+            }
+        }*/
+
         [HttpGet("{id}")]
         public IActionResult GetById(string id) 
         {
