@@ -12,8 +12,8 @@ using MyWebApiApp.Data;
 namespace MyWebApiApp.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20240106024613_InitDb")]
-    partial class InitDb
+    [Migration("20240117052221_update")]
+    partial class update
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

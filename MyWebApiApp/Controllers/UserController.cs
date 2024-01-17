@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Console;
 
 namespace MyWebApiApp.Controllers
 {
@@ -29,6 +30,7 @@ namespace MyWebApiApp.Controllers
             _appSettings = optionsMonitor.CurrentValue;
         }
 
+        //Lấy thông tin người dùng chat gần nhất với Login User
         [HttpGet("GetUsers")]
         public IActionResult GetUsers(int rootUserId) 
         { 
@@ -67,6 +69,36 @@ namespace MyWebApiApp.Controllers
             }
         }
 
+        //Tìm kiếm người dùng bằng tên
+        [HttpGet("{userName}")]
+        public IActionResult FindUserByName(string userName)
+        {
+            try
+            {
+                var users = _context.NguoiDungs.Where(user => user.UserName.Contains(userName))
+                    .OrderByDescending(user => user.UserName.IndexOf(userName))
+                    .Take(6).ToList();
+                return Ok(new ApiResponse
+                {
+                    Success = true,
+                    Message = "Success find user by name",
+                    Data = users.ToList()
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        Message = "Fail to find user"
+                    }
+                );
+            }
+        }
+
+        //Đăng ký tài khoản
         [HttpPost("Register")]
         public IActionResult Register(string UserName, string Password, string HoTen, string Email)
         {
@@ -98,6 +130,7 @@ namespace MyWebApiApp.Controllers
             }
         }
 
+        //Xóa tài khoản
         [HttpDelete("{UserName}")]
         public IActionResult Delete(string UserName) 
         {
@@ -131,6 +164,7 @@ namespace MyWebApiApp.Controllers
             }
         }
 
+        //Update thông tin tài khoản
         [HttpPut("{UserName}")]
         public IActionResult Update(string UserName, string Password, string HoTen, string Email) 
         {
@@ -167,7 +201,7 @@ namespace MyWebApiApp.Controllers
             }
         }
 
-
+        //Đăng nhập
         [HttpPost("Login")]
         public async Task<IActionResult> Validate(LoginModel model)
         {
@@ -192,6 +226,7 @@ namespace MyWebApiApp.Controllers
             });
         }
 
+        //Tạo Token JWT
         private async Task<TokenModel> GenerateToken(NguoiDung nguoiDung)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -241,6 +276,7 @@ namespace MyWebApiApp.Controllers
             };
         }
 
+        //Refresh Token
         private string GenerateRefreshToken()
         {
             var random = new byte[32];
@@ -252,6 +288,7 @@ namespace MyWebApiApp.Controllers
             }
         }
 
+        //Renew Token
         [HttpPost("RenewToken")]
         public async Task<IActionResult> RenewToken(TokenModel model)
         {
